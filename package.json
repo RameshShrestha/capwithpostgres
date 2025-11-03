@@ -1,0 +1,53 @@
+{
+  "name": "samplepostgres",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "dependencies": {
+    "@cap-js/postgres": "^2.0.6",
+    "@sap/cds": "^9",
+    "@sap/xssec": "^4",
+    "express": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2",
+    "@sap/cds-dk": "^9",
+    "@cap-js/cds-test": "^0"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "test": "node --test"
+  },
+  "private": true,
+  "cds": {
+    "requires": {
+      "[production]": {
+        "auth": "xsuaa"
+      },
+      "[development]": {
+        "db": {
+          "kind": "sqlite",
+          "model": "db/schema.cds",
+          "credentials": {
+            "url": ":memory:"
+          }
+        }
+      },
+      "[pg]": {
+        "db": {
+          "binding": {
+            "type": "cf",
+            "instance": "postgre_ramesh",
+            "key": "postgres_ramesh",
+            "credentials": {
+              "host": "localhost",
+              "port": 63306,
+              "username": "e027d08f21b4",
+              "password": "d11804d345d0991c52b80225614e6",
+              "dbname": "NyTerVeHfuQY"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+###
+GET http://localhost:4004/odata/v4/samplepostgres/SampleEntity
+###
+POST http://localhost:4004/odata/v4/samplepostgres/SampleEntity
+Content-Type: application/json
+
+{
+    "OrderID": 3,
+    "CustomerID": "JohnDoe"
+}
