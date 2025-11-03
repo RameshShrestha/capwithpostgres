@@ -11,17 +11,30 @@
   "devDependencies": {
     "@cap-js/sqlite": "^2",
     "@sap/cds-dk": "^9",
-    "@cap-js/cds-test": "^0"
+    "@cap-js/cds-test": "^0",
+    "cds-plugin-ui5": "^0.13.0",
+    "rimraf": "^5.0.5",
+    "mbt": "^1.2.29"
   },
   "scripts": {
     "start": "cds-serve",
-    "test": "node --test"
+    "test": "node --test",
+    "watch-postgresfiori": "cds watch --open postgresfiori/index.html?sap-ui-xx-viewCache=false --livereload false",
+    "undeploy": "cf undeploy samplepostgres --delete-services --delete-service-keys --delete-service-brokers",
+    "build": "rimraf resources mta_archives && mbt build --mtar archive",
+    "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
   },
   "private": true,
   "cds": {
     "requires": {
       "[production]": {
-        "auth": "xsuaa"
+        "auth": "xsuaa",
+        "db": {
+          "impl": "@cap-js/postgres",
+          "dialect": "postgres",
+          "kind": "postgres"
+           
+        }
       },
       "[development]": {
         "db": {
@@ -39,8 +52,8 @@
             "instance": "postgre_ramesh",
             "key": "postgres_ramesh",
             "credentials": {
-              "host": "localhost",
-              "port": 63306,
+              "host": "postgres-72b6fc0b-0526-46aa-b714-000e797a96ab.cqryblsdrbcs.us-east-1.rds.amazonaws.com",
+              "port": 7307,
               "username": "e027d08f21b4",
               "password": "d11804d345d0991c52b80225614e6",
               "dbname": "NyTerVeHfuQY"
@@ -49,5 +62,11 @@
         }
       }
     }
-  }
+  },
+  "workspaces": [
+    "app/*"
+  ],
+  "sapux": [
+    "app/postgresfiori"
+  ]
 }
