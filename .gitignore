@@ -17,7 +17,7 @@ resources/
 *_mta_build_tmp
 *.mtar
 mta_archives/
-
+resources/
 # Other
 .DS_Store
 *.orig

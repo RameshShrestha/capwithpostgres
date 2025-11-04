@@ -3,143 +3,157 @@ ID: samplepostgres
 description: A simple CAP project.
 version: 1.0.0
 modules:
-  - name: samplepostgres-srv
-    type: nodejs
-    path: gen/srv
-    requires:
-      - name: postgre_ramesh
-      - name: samplepostgres-auth
-    provides:
-      - name: srv-api
-        properties:
-          srv-url: ${default-url}
+- name: samplepostgres-srv
+  type: nodejs
+  path: gen/srv
+  requires:
+  - name: postgre_ramesh
+  - name: samplepostgres-auth
+  provides:
+  - name: srv-api
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: nodejs_buildpack
+    instances: 1
+  build-parameters:
+    builder: npm-ci
+- name: samplepostgres-postgres-deployer
+  type: nodejs
+  path: gen/pg
+  requires:
+  - name: postgre_ramesh
+  - name: samplepostgres-auth
+  
+  parameters:
+    buildpack: nodejs_buildpack
+    no-route: true
+    no-start: true
+    tasks:
+    - command: npm start
+      name: deploy-to-postgresql
+- name: samplepostgres-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: samplepostgres-destination-service
     parameters:
-      buildpack: nodejs_buildpack
-      instances: 1
-    build-parameters:
-      builder: npm-ci
-  - name: samplepostgres-postgres-deployer
-    type: nodejs
-    path: gen/pg
-    requires:
-      - name: postgre_ramesh
-      - name: samplepostgres-auth
+      content-target: true
+  - name: samplepostgres_html_repo_host
     parameters:
-      buildpack: nodejs_buildpack
-      no-route: true
-      no-start: true
-      tasks:
-        - command: npm start
-          name: deploy-to-postgresql
-  - name: samplepostgres-destination-content
-    type: com.sap.application.content
-    requires:
-      - name: samplepostgres-destination-service
-        parameters:
-          content-target: true
-      - name: samplepostgres_html_repo_host
-        parameters:
-          service-key:
-            name: samplepostgres_html_repo_host-key
-      - name: samplepostgres-auth
-        parameters:
-          service-key:
-            name: samplepostgres-auth-key
+      service-key:
+        name: samplepostgres_html_repo_host-key
+  - name: samplepostgres-auth
     parameters:
-      content:
+      service-key:
+        name: samplepostgres-auth-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: capwithpostgress_samplepostgres_html_repo_host
+          ServiceInstanceName: samplepostgres-html5-app-host-service
+          ServiceKeyName: samplepostgres_html_repo_host-key
+          sap.cloud.service: capwithpostgress
+        - Authentication: OAuth2UserTokenExchange
+          Name: capwithpostgress_samplepostgres_auth
+          ServiceInstanceName: samplepostgres-auth
+          ServiceKeyName: samplepostgres-auth-key
+          sap.cloud.service: capwithpostgress
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+- name: samplepostgres-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: samplepostgres_html_repo_host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - postgresfiori.zip
+      name: postgresfiori
+      target-path: resources/
+    - artifacts:
+      - employeespg.zip
+      name: employeespg
+      target-path: resources/
+- name: postgresfiori
+  type: html5
+  path: app/postgresfiori
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: employeespg
+  type: html5
+  path: app/employeespg
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: postgre_ramesh
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: postgresql-db
+    service-plan: trial
+- name: samplepostgres-auth
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      tenant-mode: dedicated
+      xsappname: samplepostgres-${org}-${space}
+    path: ./xs-security.json
+    service: xsuaa
+    service-plan: application
+- name: samplepostgres-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
         instance:
           destinations:
-            - Name: capwithpostgress_samplepostgres_html_repo_host
-              ServiceInstanceName: samplepostgres-html5-app-host-service
-              ServiceKeyName: samplepostgres_html_repo_host-key
-              sap.cloud.service: capwithpostgress
-            - Authentication: OAuth2UserTokenExchange
-              Name: capwithpostgress_samplepostgres_auth
-              ServiceInstanceName: samplepostgres-auth
-              ServiceKeyName: samplepostgres-auth-key
-              sap.cloud.service: capwithpostgress
-          existing_destinations_policy: ignore
-    build-parameters:
-      no-source: true
-  - name: samplepostgres-app-content
-    type: com.sap.application.content
-    path: .
-    requires:
-      - name: samplepostgres_html_repo_host
-        parameters:
-          content-target: true
-    build-parameters:
-      build-result: resources
-      requires:
-        - artifacts:
-            - postgresfiori.zip
-          name: postgresfiori
-          target-path: resources/
-  - name: postgresfiori
-    type: html5
-    path: app/postgresfiori
-    build-parameters:
-      build-result: dist
-      builder: custom
-      commands:
-        - npm install
-        - npm run build:cf
-      supported-platforms:
-        []
-resources:
-  - name: postgre_ramesh
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: postgresql-db
-      service-plan: trial
-  - name: samplepostgres-auth
-    type: org.cloudfoundry.managed-service
-    parameters:
-      config:
-        tenant-mode: dedicated
-        xsappname: samplepostgres-${org}-${space}
-      path: ./xs-security.json
-      service: xsuaa
-      service-plan: application
-  - name: samplepostgres-destination-service
-    type: org.cloudfoundry.managed-service
-    parameters:
-      config:
-        HTML5Runtime_enabled: true
-        init_data:
-          instance:
-            destinations:
-              - Authentication: NoAuthentication
-                Name: ui5
-                ProxyType: Internet
-                Type: HTTP
-                URL: https://ui5.sap.com
-              - Authentication: NoAuthentication
-                HTML5.DynamicDestination: true
-                HTML5.ForwardAuthToken: true
-                Name: srv-api
-                ProxyType: Internet
-                Type: HTTP
-                URL: ~{srv-api/srv-url}
-            existing_destinations_policy: update
-        version: 1.0.0
-      service: destination
-      service-name: samplepostgres-destination-service
-      service-plan: lite
-    requires:
-      - name: srv-api
-  - name: samplepostgres_html_repo_host
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: html5-apps-repo
-      service-name: samplepostgres-html5-app-host-service
-      service-plan: app-host
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          - Authentication: NoAuthentication
+            HTML5.DynamicDestination: true
+            HTML5.ForwardAuthToken: true
+            Name: srv-api
+            ProxyType: Internet
+            Type: HTTP
+            URL: ~{srv-api/srv-url}
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: samplepostgres-destination-service
+    service-plan: lite
+  requires:
+  - name: srv-api
+- name: samplepostgres_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: samplepostgres-html5-app-host-service
+    service-plan: app-host
 parameters:
   deploy_mode: html5-repo
   enable-parallel-deployments: true
 build-parameters:
   before-all:
-    - builder: custom
-      commands:
-        - npm ci
-        - npx cds build --production
+  - builder: custom
+    commands:
+    - npm ci
+    - npx cds build --production

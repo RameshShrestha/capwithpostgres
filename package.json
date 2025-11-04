@@ -22,7 +22,8 @@
     "watch-postgresfiori": "cds watch --open postgresfiori/index.html?sap-ui-xx-viewCache=false --livereload false",
     "undeploy": "cf undeploy samplepostgres --delete-services --delete-service-keys --delete-service-brokers",
     "build": "rimraf resources mta_archives && mbt build --mtar archive",
-    "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
+    "deploy": "cf deploy mta_archives/archive.mtar --retries 1",
+    "watch-employeespg": "cds watch --open employeespg/index.html?sap-ui-xx-viewCache=false --livereload false"
   },
   "private": true,
   "cds": {
@@ -33,7 +34,6 @@
           "impl": "@cap-js/postgres",
           "dialect": "postgres",
           "kind": "postgres"
-           
         }
       },
       "[development]": {
@@ -67,6 +67,7 @@
     "app/*"
   ],
   "sapux": [
-    "app/postgresfiori"
+    "app/postgresfiori",
+    "app/employeespg"
   ]
 }
